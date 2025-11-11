@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinanceHelpingAid</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        // Set up custom Tailwind theme
+        tailwind.config = {
+            darkMode: 'class', // or 'media' or 'class'
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        indigo: {
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                        },
+                        cyan: {
+                            400: '#22d3ee',
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; /* bg-slate-900 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; /* bg-slate-700 */
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; /* bg-slate-600 */
+        }
+        /* Style for number input spinners */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        /* Page transition */
+        .page {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .page.hidden {
+            opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+            display: none; /* Add display:none to prevent interaction */
+        }
+        .calculator-pane {
+            display: none;
+        }
+        .calculator-pane.active {
+            display: block;
+        }
+        
+        /* * All @apply styles have been moved directly into the HTML class attributes 
+         * to ensure compatibility with the Tailwind CDN.
+         * The JavaScript functions that generate HTML have also been updated.
+        */
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8 flex items-center justify-center">
+
+    <div class="w-full max-w-2xl bg-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+        
+        <!-- App Header (Appears on Dashboard) -->
+        <header id="app-header" class="text-center p-6 border-b border-slate-700">
+            <h1 class="text-3xl font-bold text-indigo-400">FinanceHelpingAid</h1>
+            <p class="text-slate-400 text-sm mt-1">Your complete financial toolkit</p>
+        </header>
+
+        <!-- Back Button (Appears in Calculators) -->
+        <header id="calc-header" class="p-4 border-b border-slate-700 hidden">
+            <button id="back-to-dashboard" onclick="showDashboard()" class="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors">
+                <!-- Back Arrow SVG -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                </svg>
+                Back to Dashboard
+            </button>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="p-6 md:p-8">
+
+            <!-- PAGE 1: Calculator Dashboard -->
+            <main id="calculator-grid" class="page">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    
+                    <!-- Grid Item: EMI -->
+                    <button onclick="showCalculator('emi')" class="flex flex-col items-center justify-center space-y-2 p-6 bg-slate-700 rounded-lg shadow-md text-slate-200 font-medium transition-all duration-200 hover:bg-slate-600 hover:shadow-lg hover:scale-105">
+                        <!-- SVG Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H7a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                        <span>EMI</span>
+                    </button>
+
+                    <!-- Grid Item: SIP -->
+                    <button onclick="showCalculator('sip')" class="flex flex-col items-center justify-center space-y-2 p-6 bg-slate-700 rounded-lg shadow-md text-slate-200 font-medium transition-all duration-200 hover:bg-slate-600 hover:shadow-lg hover:scale-105">
+                        <!-- SVG Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        <span>SIP</span>
+                    </button>
+
+                    <!-- Grid Item: Lump Sum -->
+                    <button onclick="showCalculator('lump')" class="flex flex-col items-center justify-center space-y-2 p-6 bg-slate-700 rounded-lg shadow-md text-slate-200 font-medium transition-all duration-200 hover:bg-slate-600 hover:shadow-lg hover:scale-105">
+                        <!-- SVG Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span>Lump Sum</span>
+                    </button>
+
+                    <!-- Grid Item: Goal Planner -->
+                    <button onclick="showCalculator('goal')" class="flex flex-col items-center justify-center space-y-2 p-6 bg-slate-700 rounded-lg shadow-md text-slate-200 font-medium transition-all duration-200 hover:bg-slate-600 hover:shadow-lg hover:scale-105">
+                        <!-- SVG Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H5a2 2 0 00-2 2zm0 0h18" />
+                        </svg>
+                        <span>Goal Planner</span>
+                    </button>
+
+                    <!-- Grid Item: RD -->
+                    <button onclick="showCalculator('rd')" class="flex flex-col items-center justify-center space-y-2 p-6 bg-slate-700 rounded-lg shadow-md text-slate-200 font-medium transition-all duration-200 hover:bg-slate-600 hover:shadow-lg hover:scale-105">
+                        <!-- SVG Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>RD</span>
+                    </button>
+
+                    <!-- Grid Item: Inflation -->
+                    <button onclick="showCalculator('inflation')" class="flex flex-col items-center justify-center space-y-2 p-6 bg-slate-700 rounded-lg shadow-md text-slate-200 font-medium transition-all duration-200 hover:bg-slate-600 hover:shadow-lg hover:scale-105">
+                        <!-- SVG Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                             <path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                        </svg>
+                        <span>Inflation</span>
+                    </button>
+
+                    <!-- Grid Item: Compound Interest -->
+                    <button onclick="showCalculator('ci')" class="flex flex-col items-center justify-center space-y-2 p-6 bg-slate-700 rounded-lg shadow-md text-slate-200 font-medium transition-all duration-200 hover:bg-slate-600 hover:shadow-lg hover:scale-105">
+                        <!-- SVG Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 0l3 3m-3-3l-3 3m0 6h6m0 0l3 3m-3-3l-3 3M6.5 10.5l-3 3m0 0l3 3m-3-3h6.5" />
+                        </svg>
+                        <span>Compound Int.</span>
+                    </button>
+
+                    <!-- Grid Item: Simple Interest -->
+                    <button onclick="showCalculator('si')" class="flex flex-col items-center justify-center space-y-2 p-6 bg-slate-700 rounded-lg shadow-md text-slate-200 font-medium transition-all duration-200 hover:bg-slate-600 hover:shadow-lg hover:scale-105">
+                        <!-- SVG Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h-2a2 2 0 01-2-2v-4a2 2 0 012-2h2m-4-4h4m-4 0v12m4-12v12" />
+                        </svg>
+                        <span>Simple Int.</span>
+                    </button>
+                    
+                    <!-- Grid Item: GST -->
+                    <button onclick="showCalculator('gst')" class="flex flex-col items-center justify-center space-y-2 p-6 bg-slate-700 rounded-lg shadow-md text-slate-200 font-medium transition-all duration-200 hover:bg-slate-600 hover:shadow-lg hover:scale-105">
+                        <!-- SVG Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>GST</span>
+                    </button>
+
+                </div>
+            </main>
+
+            <!-- PAGE 2: Calculator Panes -->
+            <div id="calculator-panes" class="page hidden">
+
+                <!-- EMI Calculator Pane -->
+                <div id="emi-calc" class="calculator-pane space-y-4">
+                    <h2 class="text-2xl font-semibold text-center text-slate-100">EMI Calculator</h2>
+                    <div>
+                        <label for="emi-principal" class="block text-sm font-medium text-slate-400 mb-2">Loan Amount (₹)</label>
+                        <input type="number" id="emi-principal" placeholder="e.g., 1000000" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="emi-rate" class="block text-sm font-medium text-slate-400 mb-2">Annual Interest Rate (%)</label>
+                        <input type="number" id="emi-rate" placeholder="e.g., 8.5" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="emi-tenure" class="block text-sm font-medium text-slate-400 mb-2">Loan Tenure (Years)</label>
+                        <input type="number" id="emi-tenure" placeholder="e.g., 20" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <button class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50" onclick="calculateEMI()">Calculate</button>
+                    <div id="emi-result" class="p-6 bg-slate-850 border border-slate-700 rounded-lg space-y-3 text-slate-200 hidden"></div>
+                    <!-- Gemini Feature Added -->
+                    <button id="emi-gemini-btn" class="w-full flex items-center justify-center bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50 relative hidden" onclick="getEmiAnalysis()">
+                        <span class="gemini-btn-content transition-opacity duration-200">
+                            ✨ Analyze this Loan
+                        </span>
+                        <span class="gemini-btn-loader absolute inset-0 flex items-center justify-center transition-opacity duration-200 hidden">
+                            <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        </span>
+                    </button>
+                    <div id="emi-gemini-result" class="p-6 bg-slate-850 border border-slate-700 rounded-lg space-y-4 text-slate-300 hidden"></div>
+                </div>
+
+                <!-- SIP Calculator Pane -->
+                <div id="sip-calc" class="calculator-pane space-y-4">
+                    <h2 class="text-2xl font-semibold text-center text-slate-100">SIP Calculator</h2>
+                    <div>
+                        <label for="sip-amount" class="block text-sm font-medium text-slate-400 mb-2">Monthly Investment (₹)</label>
+                        <input type="number" id="sip-amount" placeholder="e.g., 5000" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="sip-rate" class="block text-sm font-medium text-slate-400 mb-2">Expected Annual Return (%)</label>
+                        <input type="number" id="sip-rate" placeholder="e.g., 12" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="sip-tenure" class="block text-sm font-medium text-slate-400 mb-2">Investment Period (Years)</label>
+                        <input type="number" id="sip-tenure" placeholder="e.g., 10" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <button class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50" onclick="calculateSIP()">Calculate</button>
+                    <div id="sip-result" class="p-6 bg-slate-850 border border-slate-700 rounded-lg space-y-3 text-slate-200 hidden"></div>
+                </div>
+                
+                <!-- Lump Sum Calculator Pane -->
+                <div id="lump-calc" class="calculator-pane space-y-4">
+                    <h2 class="text-2xl font-semibold text-center text-slate-100">Lump Sum Calculator</h2>
+                    <div>
+                        <label for="lump-principal" class="block text-sm font-medium text-slate-400 mb-2">Total Investment (₹)</label>
+                        <input type="number" id="lump-principal" placeholder="e.g., 100000" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="lump-rate" class="block text-sm font-medium text-slate-400 mb-2">Expected Annual Return (%)</label>
+                        <input type="number" id="lump-rate" placeholder="e.g., 10" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="lump-tenure" class="block text-sm font-medium text-slate-400 mb-2">Investment Period (Years)</label>
+                        <input type="number" id="lump-tenure" placeholder="e.g., 10" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <button class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50" onclick="calculateLumpSum()">Calculate</button>
+                    <div id="lump-result" class="p-6 bg-slate-850 border border-slate-700 rounded-lg space-y-3 text-slate-200 hidden"></div>
+                </div>
+
+                <!-- Goal Planner Pane -->
+                <div id="goal-calc" class="calculator-pane space-y-4">
+                    <h2 class="text-2xl font-semibold text-center text-slate-100">Goal Planner</h2>
+                    <div>
+                        <label for="goal-target" class="block text-sm font-medium text-slate-400 mb-2">Target Amount (₹)</label>
+                        <input type="number" id="goal-target" placeholder="e.g., 10000000" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <!-- Gemini Feature Input Added -->
+                    <div>
+                        <label for="goal-description" class="block text-sm font-medium text-slate-400 mb-2">What is your goal?</label>
+                        <input type="text" id="goal-description" placeholder="e.g., Buying a new car, Child's education" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="goal-rate" class="block text-sm font-medium text-slate-400 mb-2">Expected Annual Return (%)</label>
+                        <input type="number" id="goal-rate" placeholder="e.g., 12" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="goal-tenure" class="block text-sm font-medium text-slate-400 mb-2">Investment Period (Years)</label>
+                        <input type="number" id="goal-tenure" placeholder="e.g., 15" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <button class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50" onclick="calculateGoal()">Calculate</button>
+                    <div id="goal-result" class="p-6 bg-slate-850 border border-slate-700 rounded-lg space-y-3 text-slate-200 hidden"></div>
+                    <!-- Gemini Feature Added -->
+                    <button id="goal-gemini-btn" class="w-full flex items-center justify-center bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50 relative hidden" onclick="getGoalInsights()">
+                        <span class="gemini-btn-content transition-opacity duration-200">
+                            ✨ Get Goal Insights
+                        </span>
+                        <span class="gemini-btn-loader absolute inset-0 flex items-center justify-center transition-opacity duration-200 hidden">
+                            <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        </span>
+                    </button>
+                    <div id="goal-gemini-result" class="p-6 bg-slate-850 border border-slate-700 rounded-lg space-y-4 text-slate-300 hidden"></div>
+                </div>
+
+                <!-- RD Calculator Pane -->
+                <div id="rd-calc" class="calculator-pane space-y-4">
+                    <h2 class="text-2xl font-semibold text-center text-slate-100">Recurring Deposit (RD) Calculator</h2>
+                    <div>
+                        <label for="rd-amount" class="block text-sm font-medium text-slate-400 mb-2">Monthly Deposit (₹)</label>
+                        <input type="number" id="rd-amount" placeholder="e.g., 2000" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="rd-rate" class="block text-sm font-medium text-slate-400 mb-2">Annual Interest Rate (%)</label>
+                        <input type="number" id="rd-rate" placeholder="e.g., 6.5" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="rd-tenure" class="block text-sm font-medium text-slate-400 mb-2">Period (Years)</label>
+                        <input type="number" id="rd-tenure" placeholder="e.g., 5" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <button class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50" onclick="calculateRD()">Calculate</button>
+                    <div id="rd-result" class="p-6 bg-slate-850 border border-slate-700 rounded-lg space-y-3 text-slate-200 hidden"></div>
+                </div>
+
+                <!-- Inflation Calculator Pane -->
+                <div id="inflation-calc" class="calculator-pane space-y-4">
+                    <h2 class="text-2xl font-semibold text-center text-slate-100">Inflation Calculator</h2>
+                    <div>
+                        <label for="inflation-current" class="block text-sm font-medium text-slate-400 mb-2">Current Amount (₹)</label>
+                        <input type="number" id="inflation-current" placeholder="e.g., 100000" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="inflation-rate" class="block text-sm font-medium text-slate-400 mb-2">Annual Inflation Rate (%)</label>
+                        <input type="number" id="inflation-rate" placeholder="e.g., 6" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="inflation-years" class="block text-sm font-medium text-slate-400 mb-2">Number of Years</label>
+                        <input type="number" id="inflation-years" placeholder="e.g., 10" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <button class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50" onclick="calculateInflation()">Calculate</button>
+                    <div id="inflation-result" class="p-6 bg-slate-850 border border-slate-700 rounded-lg space-y-3 text-slate-200 hidden"></div>
+                </div>
+
+                <!-- Compound Interest Pane -->
+                <div id="ci-calc" class="calculator-pane space-y-4">
+                    <h2 class="text-2xl font-semibold text-center text-slate-100">Compound Interest Calculator</h2>
+                    <div>
+                        <label for="ci-principal" class="block text-sm font-medium text-slate-400 mb-2">Principal Amount (₹)</label>
+                        <input type="number" id="ci-principal" placeholder="e.g., 10000" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="ci-rate" class="block text-sm font-medium text-slate-400 mb-2">Annual Interest Rate (%)</label>
+                        <input type="number" id="ci-rate" placeholder="e.g., 6" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="ci-time" class="block text-sm font-medium text-slate-400 mb-2">Time (Years)</label>
+                        <input type="number" id="ci-time" placeholder="e.g., 5" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="ci-frequency" class="block text-sm font-medium text-slate-400 mb-2">Compounding Frequency</label>
+                        <select id="ci-frequency" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="1">Annually</option>
+                            <option value="2">Semi-Annually</option>
+                            <option value="4">Quarterly</option>
+                            <option value="12">Monthly</option>
+                        </select>
+                    </div>
+                    <button class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50" onclick="calculateCI()">Calculate</button>
+                    <div id="ci-result" class="p-6 bg-slate-850 border border-slate-700 rounded-lg space-y-3 text-slate-200 hidden"></div>
+                </div>
+
+                <!-- Simple Interest Pane -->
+                <div id="si-calc" class="calculator-pane space-y-4">
+                    <h2 class="text-2xl font-semibold text-center text-slate-100">Simple Interest Calculator</h2>
+                    <div>
+                        <label for="si-principal" class="block text-sm font-medium text-slate-400 mb-2">Principal Amount (₹)</label>
+                        <input type="number" id="si-principal" placeholder="e.g., 10000" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="si-rate" class="block text-sm font-medium text-slate-400 mb-2">Annual Interest Rate (%)</label>
+                        <input type="number" id="si-rate" placeholder="e.g., 5" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="si-time" class="block text-sm font-medium text-slate-400 mb-2">Time (Years)</label>
+                        <input type="number" id="si-time" placeholder="e.g., 3" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <button class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50" onclick="calculateSI()">Calculate</button>
+                    <div id="si-result" class="p-6 bg-slate-850 border border-slate-700 rounded-lg space-y-3 text-slate-200 hidden"></div>
+                </div>
+                
+                <!-- GST Calculator Pane -->
+                <div id="gst-calc" class="calculator-pane space-y-4">
+                    <h2 class="text-2xl font-semibold text-center text-slate-100">GST Calculator</h2>
+                    <div>
+                        <label for="gst-amount" class="block text-sm font-medium text-slate-400 mb-2">Amount (₹)</label>
+                        <input type="number" id="gst-amount" placeholder="e.g., 1000" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="gst-rate" class="block text-sm font-medium text-slate-400 mb-2">GST Rate (%)</label>
+                        <select id="gst-rate" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="5">5%</option>
+                            <option value="12">12%</option>
+                            <option value="18">18%</option>
+                            <option value="28">28%</option>
+                        </select>
+                    </div>
+                     <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-2">Calculation Type</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="gst-type" value="exclusive" class="form-radio text-indigo-600" checked>
+                                <span class="ml-2 text-slate-300">GST Exclusive</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="gst-type" value="inclusive" class="form-radio text-indigo-600">
+                                <span class="ml-2 text-slate-300">GST Inclusive</span>
+                            </label>
+                        </div>
+                    </div>
+                    <button class="w-full bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-all duration-200 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-800 disabled:opacity-50" onclick="calculateGST()">Calculate</button>
+                    <div id="gst-result" class="p-6 bg-slate-850 border border-slate-700 rounded-lg space-y-3 text-slate-200 hidden"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const appHeader = document.getElementById('app-header');
+        const calcHeader = document.getElementById('calc-header');
+        const dashboardPage = document.getElementById('calculator-grid');
+        const calculatorPanesContainer = document.getElementById('calculator-panes');
+        const calculatorPanes = document.querySelectorAll('.calculator-pane');
+
+        // --- Navigation ---
+
+        function showCalculator(calcId) {
+            // Hide dashboard
+            appHeader.classList.add('hidden');
+            dashboardPage.classList.add('hidden');
+            
+            // Deactivate all panes
+            calculatorPanes.forEach(pane => pane.classList.remove('active'));
+            
+            // Show calculator header
+            calcHeader.classList.remove('hidden');
+            
+            // Show main calculator pane container
+            calculatorPanesContainer.classList.remove('hidden');
+            
+            // Activate the specific calculator pane
+            const paneToShow = document.getElementById(`${calcId}-calc`);
+            if (paneToShow) {
+                paneToShow.classList.add('active');
+            }
+
+            // Hide all result boxes
+            hideAllResults();
+        }
+
+        function showDashboard() {
+            // Hide calculator header and panes
+            calcHeader.classList.add('hidden');
+            calculatorPanesContainer.classList.add('hidden');
+            
+            // Deactivate all panes
+            calculatorPanes.forEach(pane => pane.classList.remove('active'));
+            
+            // Show dashboard
+            appHeader.classList.remove('hidden');
+            dashboardPage.classList.remove('hidden');
+        }
+
+        function hideAllResults() {
+            document.querySelectorAll('.result-box').forEach(box => box.classList.add('hidden'));
+            document.querySelectorAll('.gemini-button').forEach(btn => btn.classList.add('hidden'));
+            document.querySelectorAll('.gemini-result-box').forEach(box => box.classList.add('hidden'));
+        }
+
+        // --- Helper Functions ---
+
+        /**
+         * Formats a number to Indian Rupee string (e.g., ₹ 1,00,000)
+         * @param {number} num - The number to format
+         * @returns {string} - The formatted string
+         */
+        function formatCurrency(num) {
+            if (isNaN(num)) return "₹ 0";
+            const formatter = new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            });
+            return formatter.format(num);
+        }
+
+        /**
+         * Gets a numeric value from an input field.
+         * @param {string} id - The ID of the input element
+         * @returns {number} - The numeric value, or 0 if invalid
+         */
+        function getVal(id) {
+            const val = parseFloat(document.getElementById(id).value);
+            return isNaN(val) ? 0 : val;
+        }
+
+        /**
+         * Shows a result in the specified result box.
+         * @param {string} id - The ID of the result box
+         * @param {string} html - The HTML content to display
+         */
+        function showResult(id, html) {
+            // Updated to use a standard set of classes
+            const el = document.getElementById(id);
+            el.innerHTML = html;
+            el.classList.remove('hidden');
+        }
+
+        /**
+         * Creates a styled result row.
+         * @param {string} label - The label for the row
+         * @param {string} value - The value for the row
+         * @param {boolean} [isTotal=false] - Whether this is the main total row
+         * @returns {string} - The HTML string for the row
+         */
+        function createResultRow(label, value, isTotal = false) {
+            if (isTotal) {
+                return `
+                    <p class="flex justify-between items-center border-t border-slate-700 pt-3 mt-2">
+                        <span class="text-xl font-bold text-slate-300">${label}</span>
+                        <span class="text-2xl font-bold text-cyan-400">${value}</span>
+                    </p>
+                `;
+            }
+            return `
+                <p class="flex justify-between items-center">
+                    <span class="text-slate-400 font-medium">${label}</span>
+                    <span class="text-lg font-semibold text-indigo-300">${value}</span>
+                </p>
+            `;
+        }
+
+        // --- Calculator Logic ---
+
+        function calculateEMI() {
+            const p = getVal('emi-principal');
+            const r = getVal('emi-rate') / 12 / 100; // Monthly rate
+            const n = getVal('emi-tenure') * 12; // Total months
+
+            if (p === 0 || r === 0 || n === 0) {
+                showResult('emi-result', '<p class="text-red-400">Please fill in all fields with valid numbers.</p>');
+                document.getElementById('emi-gemini-btn').classList.add('hidden');
+                return;
+            }
+
+            const emi = (p * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+            const totalPayment = emi * n;
+            const totalInterest = totalPayment - p;
+
+            let html = createResultRow('Principal Amount', formatCurrency(p));
+            html += createResultRow('Total Interest', formatCurrency(totalInterest));
+            html += createResultRow('Total Payment', formatCurrency(totalPayment));
+            html += createResultRow('Monthly EMI', formatCurrency(emi), true);
+            
+            showResult('emi-result', html);
+            document.getElementById('emi-gemini-btn').classList.remove('hidden');
+            document.getElementById('emi-gemini-result').classList.add('hidden');
+        }
+
+        function calculateSIP() {
+            const p = getVal('sip-amount');
+            const r = getVal('sip-rate') / 100 / 12; // Monthly rate
+            const n = getVal('sip-tenure') * 12; // Total months
+
+            if (p === 0 || r === 0 || n === 0) {
+                showResult('sip-result', '<p class="text-red-400">Please fill in all fields with valid numbers.</p>');
+                return;
+            }
+
+            const m = p * ((Math.pow(1 + r, n) - 1) / r) * (1 + r);
+            const invested = p * n;
+            const returns = m - invested;
+
+            let html = createResultRow('Invested Amount', formatCurrency(invested));
+            html += createResultRow('Estimated Returns', formatCurrency(returns));
+            html += createResultRow('Future Value', formatCurrency(m), true);
+
+            showResult('sip-result', html);
+        }
+        
+        function calculateLumpSum() {
+            const p = getVal('lump-principal');
+            const r = getVal('lump-rate') / 100; // Annual rate
+            const t = getVal('lump-tenure');
+
+            if (p === 0 || r === 0 || t === 0) {
+                showResult('lump-result', '<p class="text-red-400">Please fill in all fields with valid numbers.</p>');
+                return;
+            }
+            
+            // Using compound interest formula: A = P(1 + r/n)^(nt)
+            // Assuming annual compounding (n=1)
+            const m = p * Math.pow(1 + r, t);
+            const returns = m - p;
+
+            let html = createResultRow('Invested Amount', formatCurrency(p));
+            html += createResultRow('Estimated Returns', formatCurrency(returns));
+            html += createResultRow('Future Value', formatCurrency(m), true);
+
+            showResult('lump-result', html);
+        }
+
+        function calculateGoal() {
+            const fv = getVal('goal-target');
+            const r = getVal('goal-rate') / 100 / 12; // Monthly rate
+            const n = getVal('goal-tenure') * 12; // Total months
+
+            if (fv === 0 || r === 0 || n === 0) {
+                showResult('goal-result', '<p class="text-red-400">Please fill in all fields with valid numbers.</p>');
+                document.getElementById('goal-gemini-btn').classList.add('hidden');
+                return;
+            }
+
+            const sip = (fv * r) / ((Math.pow(1 + r, n) - 1) * (1 + r));
+            const lumpSum = fv / Math.pow(1 + (r * 12), n / 12); // Annual compounding for lump sum
+
+            let html = createResultRow('Target Amount', formatCurrency(fv));
+            html += createResultRow('Monthly SIP Needed', formatCurrency(sip), true);
+            html += createResultRow('One-Time (Lump Sum) Needed', formatCurrency(lumpSum), true);
+
+            showResult('goal-result', html);
+            document.getElementById('goal-gemini-btn').classList.remove('hidden');
+            document.getElementById('goal-gemini-result').classList.add('hidden');
+        }
+
+        function calculateRD() {
+            const p = getVal('rd-amount'); // Monthly deposit
+            const r = getVal('rd-rate') / 100; // Annual rate
+            const t = getVal('rd-tenure'); // Years
+            
+            if (p === 0 || r === 0 || t === 0) {
+                showResult('rd-result', '<p class="text-red-400">Please fill in all fields with valid numbers.</p>');
+                return;
+            }
+
+            const totalMonths = t * 12;
+            const totalInvested = p * totalMonths;
+            
+            // RD calculation is typically compounded quarterly, but deposits are monthly.
+            // A common approximation (and simpler calculation) is to use the SIP formula,
+            // as it assumes periodic investments. We'll assume monthly compounding for simplicity.
+            
+            const mr = r / 12; // Monthly rate
+            let maturityValue = 0;
+            
+            // Future Value of a series formula (SIP formula)
+            maturityValue = p * ((Math.pow(1 + mr, totalMonths) - 1) / mr);
+            
+            const interest = maturityValue - totalInvested;
+
+            let html = createResultRow('Invested Amount', formatCurrency(totalInvested));
+            html += createResultRow('Estimated Interest', formatCurrency(interest));
+            html += createResultRow('Maturity Value', formatCurrency(maturityValue), true);
+
+            showResult('rd-result', html);
+        }
+
+        function calculateInflation() {
+            const c = getVal('inflation-current');
+            const r = getVal('inflation-rate') / 100;
+            const t = getVal('inflation-years');
+            
+            if (c === 0 || r === 0 || t === 0) {
+                showResult('inflation-result', '<p class="text-red-400">Please fill in all fields with valid numbers.</p>');
+                return;
+            }
+
+            const fv = c * Math.pow(1 + r, t);
+
+            let html = createResultRow('Current Amount', formatCurrency(c));
+            html += createResultRow(`Future Value (in ${t} yrs)`, formatCurrency(fv), true);
+
+            showResult('inflation-result', html);
+        }
+
+        function calculateCI() {
+            const p = getVal('ci-principal');
+            const r = getVal('ci-rate') / 100;
+            const t = getVal('ci-time');
+            const n = getVal('ci-frequency');
+
+            if (p === 0 || r === 0 || t === 0 || n === 0) {
+                showResult('ci-result', '<p class="text-red-400">Please fill in all fields with valid numbers.</p>');
+                return;
+            }
+
+            const a = p * Math.pow(1 + (r / n), n * t);
+            const interest = a - p;
+
+            let html = createResultRow('Principal Amount', formatCurrency(p));
+            html += createResultRow('Total Interest', formatCurrency(interest));
+            html += createResultRow('Total Amount', formatCurrency(a), true);
+
+            showResult('ci-result', html);
+        }
+        
+        function calculateSI() {
+            const p = getVal('si-principal');
+            const r = getVal('si-rate') / 100;
+            const t = getVal('si-time');
+            
+            if (p === 0 || r === 0 || t === 0) {
+                showResult('si-result', '<p class="text-red-400">Please fill in all fields with valid numbers.</p>');
+                return;
+            }
+            
+            const interest = p * r * t;
+            const total = p + interest;
+            
+            let html = createResultRow('Principal Amount', formatCurrency(p));
+            html += createResultRow('Total Interest', formatCurrency(interest));
+            html += createResultRow('Total Amount', formatCurrency(total), true);
+
+            showResult('si-result', html);
+        }
+        
+        function calculateGST() {
+            const amt = getVal('gst-amount');
+            const rate = getVal('gst-rate') / 100;
+            const type = document.querySelector('input[name="gst-type"]:checked').value;
+            
+            if (amt === 0 || rate === 0) {
+                showResult('gst-result', '<p class="text-red-400">Please fill in all fields with valid numbers.</p>');
+                return;
+            }
+            
+            let baseAmt, gstAmt, totalAmt;
+            
+            if (type === 'exclusive') {
+                baseAmt = amt;
+                gstAmt = amt * rate;
+                totalAmt = baseAmt + gstAmt;
+            } else { // inclusive
+                totalAmt = amt;
+                baseAmt = amt / (1 + rate);
+                gstAmt = totalAmt - baseAmt;
+            }
+            
+            const cgst = gstAmt / 2;
+            const sgst = gstAmt / 2;
+            
+            let html = createResultRow('Base Amount', formatCurrency(baseAmt));
+            html += createResultRow('CGST', formatCurrency(cgst));
+            html += createResultRow('SGST', formatCurrency(sgst));
+            html += createResultRow('Total GST', formatCurrency(gstAmt));
+            html += createResultRow('Total Amount', formatCurrency(totalAmt), true);
+            
+            showResult('gst-result', html);
+        }
+
+        // --- Gemini API Mock Functions ---
+
+        /**
+         * Simulates toggling the loader on a Gemini button.
+         * @param {string} btnId - The ID of the button
+         * @param {boolean} isLoading - The loading state
+         */
+        function toggleGeminiLoader(btnId, isLoading) {
+            const btn = document.getElementById(btnId);
+            if (!btn) return;
+            
+            const content = btn.querySelector('.gemini-btn-content');
+            const loader = btn.querySelector('.gemini-btn-loader');
+            
+            if (isLoading) {
+                btn.disabled = true;
+                btn.classList.add('loading'); // Custom class to help opacity
+                content.classList.add('opacity-0');
+                loader.classList.remove('hidden');
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                content.classList.remove('opacity-0');
+                loader.classList.add('hidden');
+            }
+        }
+        
+        /**
+         * Simulates a Gemini API call for EMI analysis.
+         */
+        function getEmiAnalysis() {
+            toggleGeminiLoader('emi-gemini-btn', true);
+            const resultBox = document.getElementById('emi-gemini-result');
+            
+            // Get values for the prompt
+            const p = getVal('emi-principal');
+            const r = getVal('emi-rate');
+            const n = getVal('emi-tenure');
+            const emi = (p * (r/12/100) * Math.pow(1 + (r/12/100), n*12)) / (Math.pow(1 + (r/12/100), n*12) - 1);
+
+            // Mock API call
+            setTimeout(() => {
+                const mockHtml = `
+                    <h4 class="text-lg font-semibold text-indigo-300">✨ AI Loan Analysis</h4>
+                    <p class="text-sm leading-relaxed">Based on your loan of <strong>${formatCurrency(p)}</strong> at <strong>${r}%</strong> for <strong>${n} years</strong>, here's a brief analysis:</p>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li>Your EMI of <strong>${formatCurrency(emi)}/mo</strong> seems standard for these terms.</li>
+                        <li>The total interest paid (<strong>${formatCurrency(emi*n*12 - p)}</strong>) is significant. Consider making partial pre-payments if possible to reduce the principal.</li>
+                        <li>This is a long-term commitment. Ensure this EMI fits comfortably within your monthly budget.</li>
+                    </ul>
+                    <p class="text-xs text-slate-400 mt-2">*This is a mock AI response for demonstration purposes.</p>
+                `;
+                resultBox.innerHTML = mockHtml;
+                resultBox.classList.remove('hidden');
+                toggleGeminiLoader('emi-gemini-btn', false);
+            }, 1500); // Simulate network delay
+        }
+
+        /**
+         * Simulates a Gemini API call for Goal Planning.
+         */
+        function getGoalInsights() {
+            toggleGeminiLoader('goal-gemini-btn', true);
+            const resultBox = document.getElementById('goal-gemini-result');
+            
+            // Get values for the prompt
+            const fv = getVal('goal-target');
+            const n = getVal('goal-tenure');
+            const goal = document.getElementById('goal-description').value || 'your goal';
+
+            // Mock API call
+            setTimeout(() => {
+                const mockHtml = `
+                    <h4 class="text-lg font-semibold text-indigo-300">✨ AI Goal Insights</h4>
+                    <p class="text-sm leading-relaxed">Here are some insights for achieving your goal of <strong>${goal}</strong> (<strong>${formatCurrency(fv)}</strong> in <strong>${n} years</strong>):</p>
+                    <ul class="list-disc list-inside space-y-1 text-sm">
+                        <li><strong>Consistency is key:</strong> Achieving this goal requires consistent monthly investments.</li>
+                        <li><strong>Review your rate:</strong> The expected return rate is an estimate. If your investments underperform, you may need to increase your SIP amount.</li>
+                        <li><strong>Consider inflation:</strong> Remember that ${formatCurrency(fv)} in ${n} years will have less purchasing power than today. You might want to adjust your target amount.</li>
+                    </ul>
+                    <p class="text-xs text-slate-400 mt-2">*This is a mock AI response for demonstration purposes.</p>
+                `;
+                resultBox.innerHTML = mockHtml;
+                resultBox.classList.remove('hidden');
+                toggleGeminiLoader('goal-gemini-btn', false);
+            }, 1500); // Simulate network delay
+        }
+
+    </script>
+</body>
+</html>
